@@ -1,9 +1,15 @@
-import { getFirestore, Firestore, doc, onSnapshot } from "firebase/firestore";
-import DependencyStore from "../dependencyStore";
-import { checkAppInitialization } from "../util";
-import { getApp } from "firebase/app";
-import { DATA_KEY, PRIMARY_KEY } from "../constant";
-import { IFirebaseModel } from "../interface/IFirebaseModel";
+import {
+    getFirestore, Firestore, doc,
+    onSnapshot, setDoc, updateDoc, collection
+} from "firebase/firestore";
+import {
+    getFirestore as getFirestoreAdmin,
+} from "firebase-admin/firestore";
+
+import { checkAppInitialization } from "../util/index.js";
+import { DATA_KEY, PRIMARY_KEY } from "../constant/index.js";
+import { BaseFirebaseModel } from "../interface/BaseFirebaseModel.js";
+import { dataKeyType } from "../types/index.js";
 
 /**
  * This decorator can be used to initialize a model
@@ -26,39 +32,115 @@ import { IFirebaseModel } from "../interface/IFirebaseModel";
  * }
  * 
  */
-export const FirestoreModel = (collection: string) => {
+export const FirestoreModel = (collection: string, useAdminSdk = false) => {
     checkAppInitialization();
-
-
-    if (!DependencyStore.store.firestore) {
-        DependencyStore.store.firestore = getFirestore(getApp());
-    }
-
-    const db = DependencyStore.store.firestore;
-
 
     return function (value: any, _context: ClassDecoratorContext): any {
 
         return class extends value {
             constructor(...args: any[]) {
                 super(args);
+
+                console.log(`Using admin ask - ${useAdminSdk}`);
+
                 // check if all keys are present.
                 validateKeys(this)
 
-                const primaryKeyValue = this[this[PRIMARY_KEY]][0]
-                const dataKeys = this[DATA_KEY]
+                const primaryKeyValue: string = this[this[PRIMARY_KEY]][0]
+                const dataKeys: dataKeyType = this[DATA_KEY]
 
                 // initialize all datakeys with a 0 value;
                 initializeKeys(dataKeys, this);
 
                 // add the listener which will continuously
                 // update the model whenever new data is available.
-                //addListener(collection, primaryKeyValue, db, this);
+                addListener(collection, primaryKeyValue, useAdminSdk,
+                    dataKeys, (this as unknown) as BaseFirebaseModel);
+
+
+                // define the write function
+                this.write = () => {
+                    const objectToWrite = createDataObject(this, dataKeys)
+                    useAdminSdk ? getFirestoreAdmin()
+                        .collection(collection)
+                        .doc(primaryKeyValue)
+                        .set(objectToWrite).catch((error) => {
+                            console.error(error);
+                            throw new Error("Write failed");
+                        }) :
+                        writeToDatabase(collection, primaryKeyValue, getFirestore(),
+                            objectToWrite);
+                }
+
+                this.update = () => {
+                    const objectToWrite = createDataObject(this, dataKeys)
+                    // accumulate all the datakeys and create an object
+                    dataKeys.forEach((val) => {
+                        const valueToWrite = this[val.name]
+
+                        if (!valueToWrite) {
+                            console.warn(`${val.name} is null`)
+                        } else {
+                            objectToWrite[val.remoteKeyName] = this[val.name]
+                        }
+
+                    });
+                    useAdminSdk ? getFirestoreAdmin()
+                        .collection(collection)
+                        .doc(primaryKeyValue)
+                        .update(objectToWrite).catch((error) => {
+                            console.error(error);
+                            throw new Error("Update failed");
+                        }) :
+                        updateModel(collection, primaryKeyValue,
+                            getFirestore(), objectToWrite)
+                }
             }
-
-
         }
     }
+
+}
+
+
+const createDataObject = (object: any, dataKeys: dataKeyType) => {
+    const objectToWrite = {}
+    // accumulate all the datakeys and create an object
+    dataKeys.forEach((val) => {
+        const valueToWrite = object[val.name]
+
+        if (!valueToWrite) {
+            console.warn(`${val.name} is null`)
+        } else {
+            objectToWrite[val.remoteKeyName] = object[val.name]
+        }
+
+    });
+
+    return objectToWrite;
+}
+
+
+const writeToDatabase = (
+    collectionName: string,
+    documentId: string,
+    db: Firestore,
+    objectToWrite: any) => {
+
+
+    const docRef = doc(db, `${collectionName}/${documentId}`);
+    setDoc(docRef, objectToWrite);
+
+}
+
+
+const updateModel = (
+    collectionName: string,
+    documentId: string,
+    db: Firestore,
+    objectToWrite: any) => {
+
+    const docRef = doc(db, `${collectionName}/${documentId}`);
+    updateDoc(docRef, objectToWrite);
 
 }
 
@@ -66,24 +148,57 @@ export const FirestoreModel = (collection: string) => {
  * Adds a listener to update the model in real time
  * @param collectionName the name of the collection
  * @param documentId the id of the document
- * @param db the database instance
- * @param object the model object
+ * @param useAdminSdk whether to use the admin apis
+ * @param datakeys the keys of the model marked with DataKey decorator
+ * @param obj the model object
  */
-const addListener = (collectionName: string, documentId: string,
-    db: Firestore, object: any) => {
+const addListener = (
+    collectionName: string,
+    documentId: string,
+    useAdminSdk: boolean,
+    datakeys: dataKeyType,
+    obj: BaseFirebaseModel) => {
 
-    const docRef = doc(db, collectionName, documentId)
-
-    onSnapshot(docRef, (doc) => {
-        const data = doc.data();
-
+    const handleData = (data: any) => {
         // populate the data 
         if (data) {
+            datakeys.forEach((value) => {
+                obj[value.name] = data[value.remoteKeyName] ?? 0;
+            });
 
+            console.log(`Data has been populated in the model ${documentId}`)
+
+            //pass the data to the registered callbacks
+            obj.callbacks.forEach((val) => {
+                val(obj);
+            });
         }
+    }
 
-    })
+    if (useAdminSdk) {
 
+        getFirestoreAdmin().collection(collectionName)
+            .doc(documentId)
+            .onSnapshot((doc) => {
+                console.log(`New data is available for the model
+                ${documentId}`);
+                const data = doc.data();
+                handleData(data);
+
+            })
+
+    } else {
+
+        const db = getFirestore();
+        const docRef = doc(db, `${collectionName}/${documentId}`);
+
+        onSnapshot(docRef, (doc) => {
+            console.log(`New data is available for the model
+            ${documentId}`);
+            const data = doc.data();
+            handleData(data);
+        });
+    }
 
 }
 
@@ -112,7 +227,7 @@ const validateKeys = (obj: any) => {
  * @param keys the keys that have been marked with data key decorator
  * @param obj the model object
  */
-const initializeKeys = (keys: Array<{name : string, remoteKeyName : string}>, obj: any) => {
+const initializeKeys = (keys: dataKeyType, obj: any) => {
     keys.forEach((value) => {
         obj[value.name] = 0;
     })

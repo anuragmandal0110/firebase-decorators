@@ -1,7 +1,7 @@
 import { Firestore } from "firebase/firestore";
 import { FirebaseApp } from "firebase/app";
 
-import { firebaseInstanceType } from "./types/index";
+import { firebaseInstanceType } from "./types/index.js";
 
 type store = {
     "app" : FirebaseApp | null

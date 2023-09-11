@@ -1,6 +1,4 @@
-import { PRIMARY_KEY } from "../constant";
-import DependencyStore from "../dependencyStore";
-import { firebaseInstanceType } from "../types/index";
+import { PRIMARY_KEY } from "../constant/index.js";
 
 /**
  * This decorator is used to mark a model's attribute as the
@@ -31,7 +29,7 @@ export const PrimaryKey = (isDocId: Boolean = true) => {
 
         const { kind, name } = context;
         if (kind === "field") {
-            return function (initialValue: any) {
+            return function (initialValue: void | any) : any | void {
 
                 // set the name of the property as primary key
                 // this will be used query and update the object.
@@ -41,7 +39,8 @@ export const PrimaryKey = (isDocId: Boolean = true) => {
 
                 Object.defineProperty(this, name, {
                     get: handler.get,
-                    set: handler.set
+                    set: handler.set,
+                    configurable : true
                 })
                 return initialValue;
             };

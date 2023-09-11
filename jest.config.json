@@ -1,0 +1,25 @@
+{
+    "projects": [
+        {
+            "transform": {
+                "^.+\\.ts?$": "ts-jest"
+            },
+            "preset": "ts-jest",
+            "moduleFileExtensions": [
+                "ts",
+                "tsx",
+                "js",
+                "jsx",
+                "json",
+                "node"
+            ],
+            "testMatch": [
+                "**/*.test.ts"
+            ],
+            "testEnvironment": "node",
+            "moduleNameMapper": {
+                "^(\\.\\.?\\/.+)\\.js$": "$1"
+            }
+        }
+    ]
+}

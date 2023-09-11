@@ -37,7 +37,8 @@ export const FirebaseInstance = (instanceType: firebaseInstanceType,
 
                 Object.defineProperty(this, name, {
                     get: handler.get,
-                    set: handler.set
+                    set: handler.set,
+                    configurable : true
                 })
                 return initialValue;
             };

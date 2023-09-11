@@ -1,6 +1,4 @@
-import { DATA_KEY, PRIMARY_KEY } from "../constant";
-import DependencyStore from "../dependencyStore";
-import { firebaseInstanceType } from "../types/index";
+import { DATA_KEY, PRIMARY_KEY } from "../constant/index.js";
 
 /**
  * This decorator is used to mark a model's field as a data field.
@@ -13,7 +11,7 @@ export const DataKey = (remoteKeyName: string | null = "") => {
 
         const { kind, name } = context;
         if (kind === "field") {
-            return function (initialValue: any) {
+            return function (initialValue: void | any) : any | void {
 
                 // set the name of the property as primary key
                 // this will be used query and update the object.

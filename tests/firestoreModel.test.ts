@@ -4,7 +4,7 @@ import { PrimaryKey } from "../src/decorators/primaryKey";
 import { DataKey } from "../src/decorators/dataKey";
 import { firebaseConfig } from "./mocks";
 import DependencyStore from "../src/dependencyStore";
-import { IFirebaseModel } from "../src/interface/IFirebaseModel";
+import { BaseFirebaseModel } from "../src/interface/BaseFirebaseModel";
 
 describe('Testing firestore Model', () => {
 
@@ -17,7 +17,7 @@ describe('Testing firestore Model', () => {
 
         expect(() => {
             @FirestoreModel("user")
-            class Model implements IFirebaseModel {
+            class Model extends BaseFirebaseModel {
 
                 @PrimaryKey(false)
                 key!: string;
@@ -27,10 +27,10 @@ describe('Testing firestore Model', () => {
 
 
                 constructor(primaryKey: string) {
+                    super()
                     this.key = primaryKey;
                 }
 
-                addCallback: (fn: Function) => void;
             }
             const model = new Model("test");
         }).toThrow(Error)
@@ -44,7 +44,7 @@ describe('Testing firestore Model', () => {
         DependencyStore.store.app = app;
 
         @FirestoreModel("user")
-        class Model implements IFirebaseModel {
+        class Model extends BaseFirebaseModel {
 
             key!: string;
 
@@ -52,9 +52,10 @@ describe('Testing firestore Model', () => {
             fieldOne!: string
 
             constructor(primaryKey: string) {
+                super();
                 this.key = primaryKey;
             }
-            addCallback: (fn: Function) => void;
+            
         }
 
         expect(() => {
@@ -71,7 +72,7 @@ describe('Testing firestore Model', () => {
         DependencyStore.store.app = app;
 
         @FirestoreModel("user")
-        class Model implements IFirebaseModel {
+        class Model extends BaseFirebaseModel {
 
             @PrimaryKey(false)
             key!: string;
@@ -81,10 +82,10 @@ describe('Testing firestore Model', () => {
 
 
             constructor(primaryKey: string) {
+                super();
                 this.key = primaryKey;
             }
 
-            addCallback: (fn: Function) => void;
         }
 
         expect(() => {
@@ -100,17 +101,17 @@ describe('Testing firestore Model', () => {
         DependencyStore.store.app = app;
 
         @FirestoreModel("user")
-        class Model implements IFirebaseModel {
+        class Model extends BaseFirebaseModel {
 
             @PrimaryKey(false)
             key!: string;
 
 
             constructor(primaryKey: string) {
+                super();
                 this.key = primaryKey;
             }
 
-            addCallback: (fn: Function) => void;
         }
 
         expect(() => {
@@ -126,7 +127,7 @@ describe('Testing firestore Model', () => {
         DependencyStore.store.app = app;
 
         @FirestoreModel("user")
-        class Model implements IFirebaseModel {
+        class Model extends BaseFirebaseModel {
 
             @PrimaryKey(false)
             key!: string;
@@ -141,14 +142,14 @@ describe('Testing firestore Model', () => {
 
 
             constructor(primaryKey: string) {
+                super();
                 this.key = primaryKey;
             }
 
-            addCallback: (fn: Function) => void;
         }
 
         const model = new Model("test");
-        expect(Object.keys(model).length).toEqual(2);
+        expect(Object.keys(model).length).toEqual(8);
         expect(model.fieldOne).not.toBeNull()
         expect(model.fieldTwo).not.toBeNull()
         expect(model.fieldOne).toEqual(0);
@@ -156,6 +157,30 @@ describe('Testing firestore Model', () => {
     });
 
 
+    test('test model is populated', () => {
 
+        const app = initializeApp(firebaseConfig);
+        // store the app 
+        DependencyStore.store.app = app;
+
+        @FirestoreModel("user")
+        class Model extends BaseFirebaseModel {
+
+            @PrimaryKey(false)
+            key!: string;
+
+
+            constructor(primaryKey: string) {
+                super();
+                this.key = primaryKey;
+            }
+
+        }
+
+        expect(() => {
+            const model = new Model("test");
+        }).toThrow(Error)
+
+    });
 
 });
