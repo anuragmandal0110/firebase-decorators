@@ -1,7 +1,7 @@
 {
   "name": "firebase-decorators",
   "type": "module",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "This module provides a set of decorators for your firebase project.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

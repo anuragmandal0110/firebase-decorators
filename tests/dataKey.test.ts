@@ -1,7 +1,5 @@
 import { DATA_KEY } from "../src/constant";
 import { DataKey } from "../src/decorators/dataKey";
-import DependencyStore from "../src/dependencyStore";
-
 
 describe('Testing data key decorator', () => {
 

@@ -6,12 +6,15 @@ import { firebaseConfig } from "./mocks";
 import DependencyStore from "../src/dependencyStore";
 import { BaseFirebaseModel } from "../src/interface/BaseFirebaseModel";
 
+
+// TODO mock utils
+// jest.mock("../src/util");
+
 describe('Testing firestore Model', () => {
 
-    beforeEach(() => {
-        DependencyStore.store.app = null;
-    });
-
+    beforeAll(() => {
+        jest.resetAllMocks()
+    })
 
     test('test exception when app is not initialized', () => {
 
@@ -39,9 +42,7 @@ describe('Testing firestore Model', () => {
 
     test('test exception is thrown if primary key is missing', () => {
 
-        const app = initializeApp(firebaseConfig);
-        // store the app 
-        DependencyStore.store.app = app;
+        initializeApp(firebaseConfig);
 
         @FirestoreModel("user")
         class Model extends BaseFirebaseModel {
@@ -55,7 +56,7 @@ describe('Testing firestore Model', () => {
                 super();
                 this.key = primaryKey;
             }
-            
+
         }
 
         expect(() => {
@@ -67,9 +68,7 @@ describe('Testing firestore Model', () => {
 
     test('test exception is not thrown if app is initialized', () => {
 
-        const app = initializeApp(firebaseConfig);
-        // store the app 
-        DependencyStore.store.app = app;
+        initializeApp(firebaseConfig);
 
         @FirestoreModel("user")
         class Model extends BaseFirebaseModel {
@@ -96,9 +95,7 @@ describe('Testing firestore Model', () => {
 
     test('test exception is thrown if no datakeys are present', () => {
 
-        const app = initializeApp(firebaseConfig);
-        // store the app 
-        DependencyStore.store.app = app;
+        initializeApp(firebaseConfig);
 
         @FirestoreModel("user")
         class Model extends BaseFirebaseModel {
@@ -122,9 +119,7 @@ describe('Testing firestore Model', () => {
 
     test('test all datakeys are initialized', () => {
 
-        const app = initializeApp(firebaseConfig);
-        // store the app 
-        DependencyStore.store.app = app;
+        initializeApp(firebaseConfig);
 
         @FirestoreModel("user")
         class Model extends BaseFirebaseModel {
@@ -159,9 +154,7 @@ describe('Testing firestore Model', () => {
 
     test('test model is populated', () => {
 
-        const app = initializeApp(firebaseConfig);
-        // store the app 
-        DependencyStore.store.app = app;
+        initializeApp(firebaseConfig);
 
         @FirestoreModel("user")
         class Model extends BaseFirebaseModel {
