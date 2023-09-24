@@ -37,14 +37,14 @@ export const createDataObject = (object: any, dataKeys: dataKeyType) => {
     return objectToWrite;
 }
 
-export const writeToDatabase = (
+export const writeToDatabase = async (
     collectionName: string,
     documentId: string,
     objectToWrite: any,
     useAdminSdk: boolean) => {
 
     if (useAdminSdk) {
-        getFirestoreAdmin()
+        await getFirestoreAdmin()
             .collection(collectionName)
             .doc(documentId)
             .set(objectToWrite).catch((error) => {
@@ -53,19 +53,19 @@ export const writeToDatabase = (
             })
     } else {
         const docRef = doc(getFirestore(), `${collectionName}/${documentId}`);
-        setDoc(docRef, objectToWrite);
+        await setDoc(docRef, objectToWrite);
     }
 
 }
 
-export const updateModel = (
+export const updateModel = async (
     collectionName: string,
     documentId: string,
     objectToWrite: any,
     useAdminSdk: boolean) => {
 
     if (useAdminSdk) {
-        getFirestoreAdmin()
+        await getFirestoreAdmin()
             .collection(collectionName)
             .doc(documentId)
             .update(objectToWrite).catch((error) => {
@@ -74,17 +74,19 @@ export const updateModel = (
             })
     } else {
         const docRef = doc(getFirestore(), `${collectionName}/${documentId}`);
-        updateDoc(docRef, objectToWrite);
+        await updateDoc(docRef, objectToWrite);
     }
 
 }
 
 export const handleData = (data: any, datakeys: dataKeyType,
-    obj: any) => {
+    obj: any, keepLocalChanges: Boolean = false) => {
     // populate the data 
     if (data) {
         datakeys.forEach((value) => {
-            obj[value.name] = data[value.remoteKeyName] ?? null;
+            obj[value.name] = keepLocalChanges ? obj[value.name]
+                ?? data[value.remoteKeyName]
+                : data[value.remoteKeyName] ?? null;
         });
         //pass the data to the registered callbacks
         obj?.callbacks?.forEach((val: any) => {
@@ -134,7 +136,7 @@ export const addListener = (
 }
 
 
-export const fetchInitialData = async (collectionName: string,
+export const fetchData = async (collectionName: string,
     documentId: string, useAdminSdk: boolean) => {
 
     let document: DocumentSnapshot | FirebaseFirestore.DocumentSnapshot;
@@ -146,12 +148,12 @@ export const fetchInitialData = async (collectionName: string,
         const db = getFirestore();
         const docRef = doc(db, `${collectionName}/${documentId}`);
         document = await getDoc(docRef)
-        document
     }
 
     if (document.exists) {
-        return document.data
+        return document.data()
     } else {
+        console.log("Document does not exist, data is empty");
         return {}
     }
 }

@@ -1,13 +1,17 @@
 {
   "name": "firebase-decorators",
   "type": "module",
-  "version": "0.1.9",
+  "version": "1.0.0",
   "description": "This module provides a set of decorators for your firebase project.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anuragmandal0110/firebase-decorators"
+  },
   "scripts": {
     "prepublish": "tsc",
     "build": "tsc",
@@ -15,7 +19,10 @@
   },
   "keywords": [
     "decorators",
-    "firebase"
+    "firebase",
+    "typescript",
+    "database",
+    "firestore"
   ],
   "author": "Anurag Mandal",
   "license": "MIT",

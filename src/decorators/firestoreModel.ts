@@ -1,9 +1,8 @@
 import {
-    addListener, checkAppInitialization, createDataObject,
-    fetchInitialData, handleData, updateModel, writeToDatabase
+    checkAppInitialization, createDataObject,
+    fetchData, handleData, updateModel, writeToDatabase
 } from "../util/index.js";
 import { DATA_KEY, PRIMARY_KEY } from "../constant/index.js";
-import { BaseFirebaseModel } from "../interface/BaseFirebaseModel.js";
 import { dataKeyType } from "../types/index.js";
 
 /**
@@ -27,10 +26,8 @@ import { dataKeyType } from "../types/index.js";
  * }
  * @param collection The name of the collection where the model will be written to.
  * @param useAdminSdk Whether to use the firebase admin sdk or not.
- * @param realTimeUpdate Whether to keep updating the model in real time.
  */
-export const FirestoreModel = (collection: string, useAdminSdk = false,
-    realTimeUpdate = false) => {
+export const FirestoreModel = (collection: string, useAdminSdk = false) => {
     checkAppInitialization();
 
 
@@ -54,34 +51,58 @@ export const FirestoreModel = (collection: string, useAdminSdk = false,
                 // initialize all datakeys with a 0 value;
                 initializeKeys(dataKeys, thisObj);
 
-                initialDataPromise = fetchInitialData(collection,
+                initialDataPromise = fetchData(collection,
                     primaryKeyValue, useAdminSdk).then((data) => {
-                        handleData(data, dataKeys, thisObj)
+                        // for initial fetch, DO NOT OVERWRITE local data
+                        handleData(data, dataKeys, thisObj, true)
+                        console.log(`Initail fetch successful, data = ${JSON.stringify(data)}, model = ${JSON.stringify(thisObj)}`);
+                    }).catch((error) => {
+                        console.error("Initial fetch error", error);
                     });
 
-                // add the listener which will continuously
-                // update the model whenever new data is available.
-                if (realTimeUpdate) {
-                    addListener(collection, primaryKeyValue, useAdminSdk,
-                        dataKeys, (thisObj as unknown) as BaseFirebaseModel);
-                }
+                // set the isReady parameter of the model.
+                this.ready = initialDataPromise;
+
+                // // add the listener which will continuously
+                // // update the model whenever new data is available.
+                // if (realTimeUpdate) {
+                //     addListener(collection, primaryKeyValue, useAdminSdk,
+                //         dataKeys, (thisObj as unknown) as BaseFirebaseModel);
+                // }
 
                 // define the write function
-                thisObj.write = () => {
+                thisObj.write = async () => {
                     const objectToWrite = createDataObject(thisObj, dataKeys)
-                    writeToDatabase(collection, primaryKeyValue,
+                    await writeToDatabase(collection, primaryKeyValue,
                         objectToWrite, useAdminSdk);
                 }
 
                 // define the update function
-                thisObj.update = () => {
+                thisObj.update = async (): Promise<any> => {
                     // update will be done only after initial promise is successful
-                    initialDataPromise.then(() => {
+                    await initialDataPromise.then(async () => {
+                        console.log(`Current model - ${JSON.stringify(thisObj)}`)
                         const objectToWrite = createDataObject(thisObj, dataKeys)
-                        updateModel(collection, primaryKeyValue,
+                        console.log(`Updated model - ${JSON.stringify(objectToWrite)} 
+                        with datakeys - ${JSON.stringify(dataKeys)}`)
+                        await updateModel(collection, primaryKeyValue,
                             objectToWrite, useAdminSdk)
                     })
 
+                }
+                // define this sync function
+                this.sync = async (keepLocalChanges: Boolean = true)
+                    : Promise<void> => {
+                    await fetchData(collection,
+                        primaryKeyValue, useAdminSdk)
+                        .then((data) => {
+                            handleData(data, dataKeys, thisObj, keepLocalChanges)
+                            console.log(`Initail fetch successful,
+                            data = ${JSON.stringify(data)},
+                            model = ${JSON.stringify(thisObj)}`);
+                        }).catch((error) => {
+                            console.error("Initial fetch error", error);
+                        });
                 }
             }
         }
