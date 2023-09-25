@@ -1,6 +1,8 @@
 {
     "collectCoverage": true,
-    "coverageReporters": ["json", "html"],
+    "coverageReporters": [
+        "text-lcov"
+    ],
     "projects": [
         {
             "transform": {

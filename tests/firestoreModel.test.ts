@@ -144,7 +144,7 @@ describe('Testing firestore Model', () => {
         }
 
         const model = new Model("test");
-        expect(Object.keys(model).length).toEqual(8);
+        expect(Object.keys(model).length).toEqual(10);
         expect(model.fieldOne).not.toBeNull()
         expect(model.fieldTwo).not.toBeNull()
         expect(model.fieldOne).toEqual(0);
