@@ -1,6 +1,6 @@
 
 # Firebase Decorators
-[![npm version](https://badge.fury.io/js/firebase-decorators.svg)](https://badge.fury.io/js/firebase-decorators) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues) [![HitCount](https://hits.dwyl.com/anuragmandal0110/firebase-decorators.svg?style=flat-square)](http://hits.dwyl.com/anuragmandal0110/firebase-decorators)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues) [![HitCount](https://hits.dwyl.com/anuragmandal0110/firebase-decorators.svg?style=flat-square)](http://hits.dwyl.com/anuragmandal0110/firebase-decorators) [![Coverage Status](https://coveralls.io/repos/github/anuragmandal0110/firebase-decorators/badge.svg?branch=CI_CD_test)](https://coveralls.io/github/anuragmandal0110/firebase-decorators?branch=CI_CD_test)
 
 Write cleaner code using decorators in your next firebase project.
 
@@ -18,7 +18,6 @@ $ npm install --save firebase-decorators
 ```typescript
 import  { initializeApp }  from  'firebase/app';  
   
-// TODO: Replace the following with your app's [Firebase project configuration](https://firebase.google.com/docs/web/learn-more#config-object)  
 const firebaseConfig =  {  //...  
 };  
   
@@ -28,8 +27,7 @@ const app = initializeApp(firebaseConfig);
 
 ```typescript
 import {initializeApp} from  "firebase-admin/app";
-  
-// TODO: Replace the following with your app's [Firebase project configuration](https://firebase.google.com/docs/web/learn-more#config-object)  
+    
 const firebaseConfig =  {  //...  
 };  
   
@@ -38,7 +36,8 @@ const app = initializeApp(firebaseConfig);
 ### Create a model
 
 Create a model which reflects the data on the database.
-Let's create a user model which we will use to store user data in Firestore. We will extend the Class with **BaseFirebaseModel**.
+
+Let's create a user model which we will use to store user data in Firestore. We will extend the Class with **BaseFirebaseModel**. 
 
 ```typescript
 Class User extends BaseFirebaseModel {
@@ -58,8 +57,9 @@ Class User extends BaseFirebaseModel {
 ```
 ### @PrimaryKey Decorator
 
-The document id to read the document from can be marked as the primary key in the model. Use the PrimaryKey decorator to mark the class field.
-This field should be initialized for all the functionalities to work, Otherwise an error will be thrown during runtime.
+The document id to read the document from can be marked as the primary key in the model.
+
+This field **should** be initialized for all the functionalities to work, Otherwise an error will be thrown during runtime.
 The field can be initialized either using the constructor or directly.
 
 #### Constructor
@@ -124,6 +124,8 @@ The Firestore model fields will be mapped to the model fields
 ### @FirestoreModel Decorator
 Finally mark the model with @FirestoreModel and provide the collection name and whether to use the admin SDK or not.
 The value for **useAdminSdk** should be set depending on whether the admin app was initialized or not.
+[Firebase app Initialization](#initialize-firebase-app)
+
 ```typescript
 @FirestoreModel("user",false)
 Class User extends BaseFirebaseModel {

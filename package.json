@@ -1,7 +1,7 @@
 {
   "name": "firebase-decorators",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "This module provides a set of decorators for your firebase project.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,8 +15,7 @@
   "scripts": {
     "prepublish": "tsc",
     "build": "tsc",
-    "test": "jest",
-    "coverage": "npm test --coverage"
+    "test": "jest --coverage --detectOpenHandles --forceExit"
   },
   "keywords": [
     "decorators",
