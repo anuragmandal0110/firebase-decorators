@@ -1,0 +1,25 @@
+on: ["push", "pull_request"]
+
+name: Generate coverage report
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v1
+
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+
+    - name: Generate test data
+      run: |
+        npm install
+        npm run test
+
+    - name: Upload to Coveralls
+      uses: coverallsapp/github-action@v2
