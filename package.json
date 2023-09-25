@@ -15,7 +15,7 @@
   "scripts": {
     "prepublish": "tsc",
     "build": "tsc",
-    "test": "jest --coverage"
+    "test": "jest --coverage --detectOpenHandles --forceExit"
   },
   "keywords": [
     "decorators",
