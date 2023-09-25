@@ -1,7 +1,7 @@
 {
     "collectCoverage": true,
     "coverageReporters": [
-        "text-lcov"
+        "lcov"
     ],
     "projects": [
         {

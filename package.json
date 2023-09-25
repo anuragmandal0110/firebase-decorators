@@ -15,8 +15,7 @@
   "scripts": {
     "prepublish": "tsc",
     "build": "tsc",
-    "test": "jest",
-    "coverage": "npm test --coverage"
+    "test": "jest --coverage"
   },
   "keywords": [
     "decorators",
